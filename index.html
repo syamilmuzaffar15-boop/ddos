@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>203'X DDoS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;600;700&family=Share+Tech+Mono&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            font-family: 'Rajdhani', 'Orbitron', sans-serif;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ===== BACKGROUND KOTAK-KOTAK (GRID) ===== */
+        .grid-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            background-image: 
+                linear-gradient(rgba(255, 100, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 100, 0, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+        }
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+        .grid-bg::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(255, 100, 0, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(255, 140, 0, 0.04) 0%, transparent 50%);
+        }
+
+        /* ===== ORB FLOATING ===== */
+        .orbs {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .orbs .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.10;
+            animation: orbFloat 20s ease-in-out infinite alternate;
+        }
+        .orbs .orb:nth-child(1) {
+            width: 350px; height: 350px;
+            background: #ff6b00;
+            top: -80px; left: -120px;
+            animation-duration: 25s;
+        }
+        .orbs .orb:nth-child(2) {
+            width: 450px; height: 450px;
+            background: #ff8c00;
+            bottom: -120px; right: -180px;
+            animation-duration: 30s;
+            animation-delay: 5s;
+        }
+        .orbs .orb:nth-child(3) {
+            width: 250px; height: 250px;
+            background: #ff4500;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            animation-duration: 18s;
+            animation-delay: 2s;
+        }
+        @keyframes orbFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(60px, -40px) scale(1.1); }
+            66% { transform: translate(-40px, 60px) scale(0.9); }
+            100% { transform: translate(30px, -20px) scale(1.05); }
+        }
+
+        /* ===== CONTAINER ===== */
+        .container {
+            max-width: 520px;
+            width: 100%;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 100, 0, 0.15);
+            border-radius: 32px;
+            padding: 32px 28px;
+            box-shadow: 
+                0 0 80px rgba(255, 100, 0, 0.04),
+                inset 0 0 80px rgba(255, 100, 0, 0.02);
+            position: relative;
+            z-index: 1;
+            animation: containerPulse 4s ease-in-out infinite;
+        }
+        @keyframes containerPulse {
+            0%, 100% { border-color: rgba(255, 100, 0, 0.15); box-shadow: 0 0 80px rgba(255, 100, 0, 0.04); }
+            50% { border-color: rgba(255, 100, 0, 0.30); box-shadow: 0 0 120px rgba(255, 100, 0, 0.08); }
+        }
+
+        /* ===== GLASS OVERLAY ===== */
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border-radius: 32px;
+            background: linear-gradient(135deg, rgba(255, 100, 0, 0.02) 0%, transparent 50%, rgba(255, 140, 0, 0.02) 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 100, 0, 0.06);
+            padding-bottom: 18px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 15%;
+            width: 70%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ff6b00, #ffa500, #ff6b00, transparent);
+            animation: linePulse 3s ease-in-out infinite;
+        }
+        @keyframes linePulse {
+            0%, 100% { opacity: 0.3; transform: scaleX(1); }
+            50% { opacity: 1; transform: scaleX(1.05); }
+        }
+        .header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #ff6b00, #ffa500, #ff8c00);
+            background-size: 200% 200%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradientMove 4s ease-in-out infinite;
+            color: #fff;
+            text-shadow: 0 0 60px rgba(255, 100, 0, 0.05);
+        }
+        @keyframes gradientMove {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        .header p {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.25);
+            letter-spacing: 6px;
+            margin-top: 4px;
+        }
+        .header .badge {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 4px 20px;
+            border-radius: 30px;
+            background: rgba(255, 100, 0, 0.06);
+            border: 1px solid rgba(255, 100, 0, 0.08);
+            font-size: 0.55rem;
+            color: #ff8c00;
+            letter-spacing: 3px;
+            font-family: 'Share Tech Mono', monospace;
+            box-shadow: 0 0 30px rgba(255, 100, 0, 0.02);
+        }
+
+        /* ===== INPUT URL ===== */
+        .input-group {
+            margin-bottom: 18px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.2);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .input-group .input-wrap {
+            position: relative;
+            border-radius: 14px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255, 100, 0, 0.06);
+            transition: all 0.4s;
+            overflow: hidden;
+        }
+        .input-group .input-wrap:focus-within {
+            border-color: #ff6b00;
+            box-shadow: 0 0 40px rgba(255, 100, 0, 0.04), inset 0 0 40px rgba(255, 100, 0, 0.02);
+        }
+        .input-group .input-wrap .icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.04);
+            font-size: 1.2rem;
+            font-style: normal;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 16px 20px 16px 48px;
+            border: none;
+            background: transparent;
+            color: #f0f0f0;
+            font-size: 0.95rem;
+            outline: none;
+            font-family: 'Rajdhani', sans-serif;
+            letter-spacing: 0.5px;
+        }
+        .input-group input::placeholder {
+            color: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ===== MENU ===== */
+        .menu-section {
+            margin: 8px 0 4px;
+        }
+        .menu-section .label {
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.15);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 100, 0, 0.04);
+            background: rgba(255, 255, 255, 0.01);
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 6px;
+        }
+        .menu-item:hover {
+            border-color: rgba(255, 100, 0, 0.12);
+            background: rgba(255, 100, 0, 0.03);
+            transform: translateX(4px);
+        }
+        .menu-item.selected {
+            border-color: #ff6b00;
+            background: rgba(255, 100, 0, 0.06);
+            box-shadow: 0 0 30px rgba(255, 100, 0, 0.03);
+        }
+        .menu-item .radio {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+            flex-shrink: 0;
+        }
+        .menu-item.selected .radio {
+            border-color: #ff6b00;
+        }
+        .menu-item.selected .radio::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff6b00;
+            box-shadow: 0 0 20px rgba(255, 100, 0, 0.2);
+        }
+        .menu-item .info {
+            flex: 1;
+        }
+        .menu-item .info .title {
+            color: #f0f0f0;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .menu-item .info .desc {
+            color: rgba(255, 255, 255, 0.10);
+            font-size: 0.55rem;
+            letter-spacing: 1px;
+            margin-top: 1px;
+        }
+
+        /* ===== PORT ===== */
+        .option-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 10px 16px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 100, 0, 0.04);
+            margin-top: 6px;
+            background: rgba(255, 255, 255, 0.01);
+            transition: 0.3s;
+        }
+        .option-row:focus-within {
+            border-color: rgba(255, 100, 0, 0.12);
+        }
+        .option-row .label-sm {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+            min-width: 70px;
+        }
+        .option-row input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #f0f0f0;
+            font-size: 0.95rem;
+            font-family: 'Share Tech Mono', monospace;
+            outline: none;
+            padding: 4px 0;
+            min-width: 60px;
+        }
+        .option-row input::placeholder {
+            color: rgba(255, 255, 255, 0.08);
+        }
+        .option-row .badge-sm {
+            padding: 2px 14px;
+            border-radius: 30px;
+            background: rgba(255, 100, 0, 0.04);
+            border: 1px solid rgba(255, 100, 0, 0.04);
+            color: #ff8c00;
+            font-size: 0.55rem;
+            letter-spacing: 1px;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* ===== SLIDER DURASI ===== */
+        .slider-row {
+            padding: 12px 16px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 100, 0, 0.04);
+            margin-top: 6px;
+            background: rgba(255, 255, 255, 0.01);
+        }
+        .slider-row .top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .slider-row .top .label-sm {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.2);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .slider-row .top .value-display {
+            color: #ff8c00;
+            font-weight: 700;
+            font-size: 1rem;
+            font-family: 'Share Tech Mono', monospace;
+            text-shadow: 0 0 30px rgba(255, 140, 0, 0.05);
+        }
+        .slider-row input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 4px;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #ff6b00, #ff4500);
+            outline: none;
+            transition: 0.3s;
+        }
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff6b00;
+            cursor: pointer;
+            box-shadow: 0 0 40px rgba(255, 100, 0, 0.15);
+            border: 2px solid rgba(255, 140, 0, 0.3);
+            transition: 0.3s;
+        }
+        .slider-row input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 60px rgba(255, 100, 0, 0.25);
+        }
+        .slider-row input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ff6b00;
+            cursor: pointer;
+            box-shadow: 0 0 40px rgba(255, 100, 0, 0.15);
+            border: 2px solid rgba(255, 140, 0, 0.3);
+        }
+        .slider-row .steps {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.5rem;
+            color: rgba(255, 255, 255, 0.04);
+            margin-top: 4px;
+            padding: 0 2px;
+        }
+
+        /* ===== TOMBOL ===== */
+        .btn-ddos {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #ff6b00, #ff8c00, #ff4500);
+            background-size: 200% 200%;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 4px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            text-transform: uppercase;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 0 60px rgba(255, 100, 0, 0.04);
+            position: relative;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+        .btn-ddos::before {
+            content: '';
+            position: absolute;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 60%);
+            opacity: 0;
+            transition: 0.6s;
+        }
+        .btn-ddos:hover::before { opacity: 1; }
+        .btn-ddos:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 80px rgba(255, 100, 0, 0.12);
+            background-position: 100% 100%;
+        }
+        .btn-ddos:active { transform: scale(0.97); }
+        .btn-ddos:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+        .btn-ddos .loader {
+            display: none;
+            width: 22px;
+            height: 22px;
+            border: 2px solid rgba(255,255,255,0.05);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .btn-ddos.loading .loader { display: block; }
+        .btn-ddos.loading .btn-text { display: none; }
+
+        /* ===== NOTIF ===== */
+        .notification {
+            margin-top: 16px;
+            padding: 14px 18px;
+            border-radius: 14px;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            animation: notifIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        @keyframes notifIn {
+            0% { opacity: 0; transform: translateY(8px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .notification .nicon {
+            font-size: 1.1rem;
+            font-style: normal;
+            flex-shrink: 0;
+        }
+        .notification.loading {
+            display: flex;
+            border: 1px solid rgba(255, 140, 0, 0.10);
+            background: rgba(255, 140, 0, 0.03);
+            color: #ff8c00;
+        }
+        .notification.loading .nicon {
+            animation: spin 1s linear infinite;
+        }
+        .notification.success {
+            display: flex;
+            border: 1px solid rgba(0, 255, 136, 0.08);
+            background: rgba(0, 255, 136, 0.03);
+            color: #00ff88;
+        }
+        .notification.error {
+            display: flex;
+            border: 1px solid rgba(255, 68, 102, 0.08);
+            background: rgba(255, 68, 102, 0.03);
+            color: #ff4466;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            text-align: center;
+            margin-top: 28px;
+            border-top: 1px solid rgba(255, 100, 0, 0.02);
+            padding-top: 18px;
+            font-size: 0.5rem;
+            letter-spacing: 3px;
+            color: rgba(255, 255, 255, 0.04);
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .footer .credit {
+            color: #888888;
+            font-size: 0.85rem;
+            font-weight: 700;
+            display: block;
+            margin-top: 4px;
+            letter-spacing: 2px;
+            text-shadow: 0 0 30px rgba(136, 136, 136, 0.02);
+        }
+
+        @media (max-width: 480px) {
+            .container { padding: 20px; border-radius: 24px; }
+            .header h1 { font-size: 1.8rem; }
+            .menu-item { padding: 10px 14px; }
+            .option-row { padding: 8px 14px; flex-wrap: wrap; }
+            .option-row .label-sm { min-width: 60px; font-size: 0.6rem; }
+            .slider-row { padding: 10px 14px; }
+            .btn-ddos { padding: 16px; font-size: 0.85rem; }
+        }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #ff6b00; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <!-- BACKGROUND GRID + ORBS -->
+    <div class="grid-bg"></div>
+    <div class="orbs">
+        <div class="orb"></div>
+        <div class="orb"></div>
+        <div class="orb"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <h1>203'X DDoS</h1>
+            <p>◈ DDOS 203'X ◈</p>
+            <span class="badge">⚡ ELEGANT</span>
+        </div>
+
+        <!-- ===== INPUT URL ===== -->
+        <div class="input-group">
+            <label for="urlInput">Target Input</label>
+            <div class="input-wrap">
+                <span class="icon">◈</span>
+                <input type="url" id="urlInput" placeholder="https://example.com" value="">
+            </div>
+        </div>
+
+        <!-- ===== MENU ===== -->
+        <div class="menu-section">
+            <div class="label">Target Type</div>
+            <div class="menu-item selected" data-type="domain">
+                <div class="radio"></div>
+                <div class="info">
+                    <div class="title">Domain</div>
+                    <div class="desc">example.com</div>
+                </div>
+            </div>
+            <div class="menu-item" data-type="ip">
+                <div class="radio"></div>
+                <div class="info">
+                    <div class="title">IP + PORT</div>
+                    <div class="desc">Masukkan IP:Port</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===== PORT (INPUT) ===== -->
+        <div class="option-row">
+            <span class="label-sm">Port</span>
+            <input type="number" id="portInput" value="80" min="1" max="65535" placeholder="80">
+            <span class="badge-sm">default 80</span>
+        </div>
+
+        <!-- ===== SLIDER DURASI ===== -->
+        <div class="slider-row">
+            <div class="top">
+                <span class="label-sm">Durasi Serangan</span>
+                <span class="value-display" id="durationDisplay">60 detik</span>
+            </div>
+            <input type="range" id="durationSlider" min="10" max="200" value="60" step="10">
+            <div class="steps">
+                <span>10s</span>
+                <span>60s</span>
+                <span>120s</span>
+                <span>200s</span>
+            </div>
+        </div>
+
+        <!-- ===== TOMBOL ===== -->
+        <button class="btn-ddos" id="btnDdos">
+            <span class="btn-text">◈ LAUNCH ATTACK</span>
+            <span class="loader"></span>
+        </button>
+
+        <!-- ===== NOTIF ===== -->
+        <div class="notification" id="notif">
+            <span class="nicon" id="notifIcon">◈</span>
+            <span id="notifText">Loading...</span>
+        </div>
+
+        <div class="footer">
+            <span>203'X DDoS — Cyber Simulation</span>
+            <span class="credit">@create apk by samil</span>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // ELEMEN
+        // ============================================================
+        const urlInput = document.getElementById('urlInput');
+        const portInput = document.getElementById('portInput');
+        const btnDdos = document.getElementById('btnDdos');
+        const notif = document.getElementById('notif');
+        const notifIcon = document.getElementById('notifIcon');
+        const notifText = document.getElementById('notifText');
+        const durationSlider = document.getElementById('durationSlider');
+        const durationDisplay = document.getElementById('durationDisplay');
+
+        let targetType = 'domain';
+        let duration = 60;
+
+        // ============================================================
+        // SLIDER
+        // ============================================================
+        durationSlider.addEventListener('input', function() {
+            duration = parseInt(this.value);
+            durationDisplay.textContent = duration + ' detik';
+        });
+
+        // ============================================================
+        // SELECT TARGET TYPE
+        // ============================================================
+        document.querySelectorAll('.menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('selected'));
+                this.classList.add('selected');
+                targetType = this.dataset.type;
+                if (targetType === 'ip') {
+                    urlInput.placeholder = '192.168.1.1';
+                } else {
+                    urlInput.placeholder = 'https://example.com';
+                }
+                urlInput.value = '';
+            });
+        });
+
+        // ============================================================
+        // SEND ATTACK
+        // ============================================================
+        btnDdos.addEventListener('click', function() {
+            const url = urlInput.value.trim();
+            const port = portInput.value.trim() || '80';
+
+            let isValid = false;
+            let displayTarget = '';
+
+            if (targetType === 'domain') {
+                try {
+                    const parsed = new URL(url);
+                    isValid = parsed.protocol === 'http:' || parsed.protocol === 'https:';
+                    displayTarget = url;
+                } catch {
+                    isValid = false;
+                }
+            } else {
+                // IP + Port
+                const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+                if (ipPattern.test(url)) {
+                    isValid = true;
+                    displayTarget = url + ':' + port;
+                } else {
+                    isValid = false;
+                }
+            }
+
+            if (!url || !isValid) {
+                showNotif('error', '✕', 'Target tidak valid');
+                return;
+            }
+
+            // Loading
+            btnDdos.classList.add('loading');
+            btnDdos.disabled = true;
+            showNotif('loading', '◈', 'Loading...');
+
+            const processTime = Math.min(duration * 50, 4000);
+            setTimeout(() => {
+                btnDdos.classList.remove('loading');
+                btnDdos.disabled = false;
+                showNotif('success', '✓', 'Sukses mengirim DDoS ke ' + displayTarget + ' selama ' + duration + ' detik (Port: ' + port + ')');
+            }, processTime);
+        });
+
+        // ============================================================
+        // NOTIF
+        // ============================================================
+        function showNotif(type, icon, text) {
+            notif.className = 'notification ' + type;
+            notifIcon.textContent = icon;
+            notifText.textContent = text;
+            notif.style.display = 'flex';
+        }
+
+        // ============================================================
+        // ENTER KEY — TIDAK LANGSUNG KIRIM
+        // ============================================================
+        urlInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') e.preventDefault();
+        });
+        portInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') e.preventDefault();
+        });
+    </script>
+</body>
+  </html>
